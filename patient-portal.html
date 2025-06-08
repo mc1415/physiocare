@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Portal - Kheng PhysioCare</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Styles specific to this portal simulation */
+        body { background-color: var(--bg-light-gray); }
+        .portal-container { max-width: 900px; margin: 40px auto; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .login-screen { text-align: center; }
+        .dashboard-screen { display: none; } /* Hidden by default */
+        .portal-section { margin-bottom: 40px; border-bottom: 1px solid var(--border-color); padding-bottom: 30px; }
+        .portal-section:last-child { border-bottom: none; }
+        .receipt-item, .appointment-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid var(--border-color); border-radius: 5px; margin-bottom: 10px; }
+        .exercise-card { background: var(--bg-light-gray); padding: 20px; border-radius: 8px; margin-bottom: 15px; }
+        #login-error { color: red; margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="container">
+            <a href="index.html"><img src="images/logo.jpg" alt="Kheng PhysioCare Logo" class="logo"></a>
+        </div>
+    </header>
+
+    <div class="portal-container">
+        <!-- =========== LOGIN SCREEN =========== -->
+        <div id="login-screen" class="login-screen">
+            <h1 class="section-title">Patient Portal Login</h1>
+            <p>Please enter your credentials to access your file.</p>
+            <form id="login-form" class="contact-form" style="max-width: 400px; margin: 30px auto;">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <p id="login-error" style="display: none;">Invalid username or password.</p>
+            </form>
+        </div>
+
+        <!-- =========== DASHBOARD SCREEN (HIDDEN INITIALLY) =========== -->
+        <div id="dashboard-screen" class="dashboard-screen">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+                <h1 class="section-title" style="text-align: left; margin-bottom: 0;">Welcome, <span id="patient-name"></span>!</h1>
+                <a href="#" onclick="logout()" class="btn btn-secondary">Logout</a>
+            </div>
+
+            <!-- 1. Appointment Management -->
+            <div class="portal-section">
+                <h2>Upcoming Appointments</h2>
+                <div id="appointments-list"></div>
+                <a href="#" class="btn btn-primary" style="margin-top: 20px;">Book a New Appointment</a>
+            </div>
+
+            <!-- 2. Billing and Receipts -->
+            <div class="portal-section">
+                <h2>Billing History & Receipts</h2>
+                <p>Download or print your receipts for insurance or personal records.</p>
+                <div id="receipts-list"></div>
+            </div>
+
+            <!-- 3. Home Exercise Program -->
+            <div class="portal-section">
+                <h2>Your Home Exercise Program</h2>
+                <div id="exercise-list"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// --- THIS IS A SIMULATION ---
+// In a real system, this data would come from a secure server and database.
+// We are faking it here with a simple JavaScript object.
+
+const fakeDatabase = {
+    patient: {
+        name: "Sokha",
+        username: "patient",
+        password: "1234"
+    },
+    appointments: [
+        { id: 1, service: "Physiotherapy Follow-Up", therapist: "Dr. Kheng Bora", date: "2024-11-25T10:00:00" },
+        { id: 2, service: "Initial Assessment", therapist: "Leakhena Som", date: "2024-12-05T14:30:00" }
+    ],
+    receipts: [
+        { id: "R-00124", date: "2024-10-18", service: "Physiotherapy Session", amount: "45.00 USD" },
+        { id: "R-00119", date: "2024-10-11", service: "Physiotherapy Session", amount: "45.00 USD" },
+        { id: "R-00105", date: "2024-10-04", service: "Initial Assessment", amount: "60.00 USD" }
+    ],
+    exercises: [
+        { name: "Cat-Cow Stretch", instructions: "Perform 2 sets of 15 repetitions, twice daily.", videoUrl: "https://www.youtube.com/embed/tS2P_s2ga_c" },
+        { name: "Glute Bridge", instructions: "Hold for 5 seconds, perform 3 sets of 12 repetitions.", videoUrl: "https://www.youtube.com/embed/8bbE64NuDTU" }
+    ]
+};
+
+// --- DOM ELEMENT REFERENCES ---
+const loginScreen = document.getElementById('login-screen');
+const dashboardScreen = document.getElementById('dashboard-screen');
+const loginForm = document.getElementById('login-form');
+const loginError = document.getElementById('login-error');
+const patientNameSpan = document.getElementById('patient-name');
+const appointmentsList = document.getElementById('appointments-list');
+const receiptsList = document.getElementById('receipts-list');
+const exerciseList = document.getElementById('exercise-list');
+
+// --- LOGIN LOGIC ---
+loginForm.addEventListener('submit', function(event) {
+    event.preventDefault(); // Stop the form from submitting
+    const usernameInput = document.getElementById('username').value;
+    const passwordInput = document.getElementById('password').value;
+
+    if (usernameInput === fakeDatabase.patient.username && passwordInput === fakeDatabase.patient.password) {
+        // Successful login
+        loginScreen.style.display = 'none';
+        dashboardScreen.style.display = 'block';
+        loginError.style.display = 'none';
+        renderDashboard();
+    } else {
+        // Failed login
+        loginError.style.display = 'block';
+    }
+});
+
+// --- RENDER DASHBOARD DATA ---
+function renderDashboard() {
+    patientNameSpan.textContent = fakeDatabase.patient.name;
+
+    // Render Appointments
+    appointmentsList.innerHTML = '';
+    fakeDatabase.appointments.forEach(app => {
+        const item = document.createElement('div');
+        item.className = 'appointment-item';
+        item.innerHTML = `
+            <div>
+                <strong>${app.service}</strong>
+                <p>With ${app.therapist} on ${new Date(app.date).toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+            </div>
+            <div>
+                <a href="#">Reschedule</a>
+            </div>
+        `;
+        appointmentsList.appendChild(item);
+    });
+
+    // Render Receipts
+    receiptsList.innerHTML = '';
+    fakeDatabase.receipts.forEach(rec => {
+        const item = document.createElement('div');
+        item.className = 'receipt-item';
+        item.innerHTML = `
+            <div>
+                <strong>Receipt #${rec.id}</strong>
+                <p>${rec.service} - ${rec.date}</p>
+            </div>
+            <strong>${rec.amount}</strong>
+            <a href="#" onclick="printReceipt('${rec.id}')" class="btn btn-secondary">Print</a>
+        `;
+        receiptsList.appendChild(item);
+    });
+    
+    // Render Exercises
+    exerciseList.innerHTML = '';
+    fakeDatabase.exercises.forEach(ex => {
+        const item = document.createElement('div');
+        item.className = 'exercise-card';
+        item.innerHTML = `
+            <h4>${ex.name}</h4>
+            <p>${ex.instructions}</p>
+            <iframe width="100%" height="250" src="${ex.videoUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="margin-top:10px; border-radius: 5px;"></iframe>
+        `;
+        exerciseList.appendChild(item);
+    });
+}
+
+// --- SIMULATED ACTIONS ---
+function printReceipt(receiptId) {
+    // In a real app, this would generate a PDF. Here, we just show an alert.
+    const receiptData = fakeDatabase.receipts.find(r => r.id === receiptId);
+    alert(
+        `--- Printing Receipt ---\n
+        Receipt ID: ${receiptData.id}
+        Date: ${receiptData.date}
+        Service: ${receiptData.service}
+        Amount: ${receiptData.amount}
+        \n--- Kheng PhysioCare ---`
+    );
+}
+
+function logout() {
+    dashboardScreen.style.display = 'none';
+    loginScreen.style.display = 'block';
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+}
+
+</script>
+
+</body>
+</html>
