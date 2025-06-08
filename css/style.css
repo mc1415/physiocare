@@ -212,6 +212,7 @@ body {
     font-size: 3rem;
     color: var(--accent-cyan);
 }
+
 .team-member-card img {
     width: 150px;
     height: 150px;
@@ -219,6 +220,23 @@ body {
     object-fit: cover;
     margin-left: auto;
     margin-right: auto;
+}
+
+@media (max-width: 768px) {
+  .team-member-card {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .team-member-card img {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .team-member-info {
+    text-align: left;
+  }
 }
 
 .testimonials {
